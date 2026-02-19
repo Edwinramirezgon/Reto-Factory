@@ -1,4 +1,4 @@
-# Sistema de Pagos — Patrón Factory Method
+# Sistema de Pagos — Patrón Factory Method Creacional
 
 ## Problema que resuelve
 
@@ -8,42 +8,46 @@ El código original usaba `if/else` encadenados para decidir cómo procesar cada
 
 | Archivo | Rol en el patrón | Qué es |
 |---|---|---|
-| `https://github.com/Edwinramirezgon/Reto-Factory/raw/refs/heads/main/java/Reto-Factory-v2.4.zip` | **Producto abstracto** | Interfaz con el contrato `process(amount)` que todo procesador debe cumplir |
-| `https://github.com/Edwinramirezgon/Reto-Factory/raw/refs/heads/main/java/Reto-Factory-v2.4.zip` | **Productos concretos** | `CreditCardProcessor`, `PayPalProcessor`, `BankTransferProcessor` — cada uno con su lógica propia |
-| `https://github.com/Edwinramirezgon/Reto-Factory/raw/refs/heads/main/java/Reto-Factory-v2.4.zip` | **La fábrica** | Clase con el método estático `create(method)` que decide qué procesador instanciar |
-| `https://github.com/Edwinramirezgon/Reto-Factory/raw/refs/heads/main/java/Reto-Factory-v2.4.zip` | **Cliente** | GUI Swing que llama a `https://github.com/Edwinramirezgon/Reto-Factory/raw/refs/heads/main/java/Reto-Factory-v2.4.zip()` sin conocer qué clase concreta se usa |
+| `PaymentProcessor.java` | **Producto abstracto** | Interfaz con el contrato `process(amount)` que todo procesador debe cumplir |
+| `ConcreteProcessors.java` | **Productos concretos** | `CreditCardProcessor`, `PayPalProcessor`, `BankTransferProcessor` — cada uno con su lógica propia |
+| `PaymentFactory.java` | **Creator abstracto** | Clase abstracta con el Factory Method `createProcessor()` y la lógica de negocio `processPayment()` |
+| `ConcreteCreators.java` | **Creators concretos** | `CreditCardFactory`, `PayPalFactory`, `BankTransferFactory` — cada uno sobreescribe `createProcessor()` |
+| `Main.java` | **Cliente** | GUI Swing que trabaja con `PaymentFactory` (tipo abstracto) sin conocer qué clase concreta se usa |
 
 ## Cómo se relacionan
 
 ```
 Main (cliente)
     │
-    └──▶ https://github.com/Edwinramirezgon/Reto-Factory/raw/refs/heads/main/java/Reto-Factory-v2.4.zip("Credit Card")
+    └──▶ resolveCreator("Credit Card") → CreditCardFactory (extiende PaymentFactory)
                 │
-                └──▶ new CreditCardProcessor()  ──▶ implements PaymentProcessor
-                     new PayPalProcessor()       ──▶ implements PaymentProcessor
-                     new BankTransferProcessor() ──▶ implements PaymentProcessor
+                └──▶ createProcessor() → new CreditCardProcessor()  ──▶ implements PaymentProcessor
+                     createProcessor() → new PayPalProcessor()       ──▶ implements PaymentProcessor
+                     createProcessor() → new BankTransferProcessor() ──▶ implements PaymentProcessor
 ```
 
-## Por qué cumple Factory Method
+## Por qué cumple Factory Method creacional
 
-1. **Un solo punto de creación**: `https://github.com/Edwinramirezgon/Reto-Factory/raw/refs/heads/main/java/Reto-Factory-v2.4.zip()` es el único lugar donde se instancian procesadores. El cliente nunca usa `new` directamente.
-2. **Producto abstracto**: `Main` solo conoce `PaymentProcessor`. No sabe si está usando `CreditCardProcessor` o cualquier otro.
-3. **Abierto/Cerrado**: agregar un nuevo método de pago = añadir una clase + un `case` en la fábrica. La lógica del cliente (`Main`) no cambia.
-4. **Centralización**: toda la lógica de qué clase crear vive en un solo lugar, eliminando los `if/else` dispersos del código original.
+1. **Creator abstracto**: `PaymentFactory` define `createProcessor()` como método abstracto — las subclases deciden qué instanciar.
+2. **ConcreteCreators**: cada fábrica concreta sobreescribe el Factory Method con su propio `new`.
+3. **Producto abstracto**: `Main` solo conoce `PaymentFactory` y `PaymentProcessor`, nunca las clases concretas.
+4. **Abierto/Cerrado**: agregar un nuevo método de pago no modifica ninguna clase existente.
 
 ## Cómo agregar un nuevo método de pago
 
 ```java
-// 1. Nuevo procesador en https://github.com/Edwinramirezgon/Reto-Factory/raw/refs/heads/main/java/Reto-Factory-v2.4.zip
+// 1. Nuevo procesador en ConcreteProcessors.java
 class CryptoProcessor implements PaymentProcessor {
     public void process(double amount) { ... }
 }
 
-// 2. Nuevo case en https://github.com/Edwinramirezgon/Reto-Factory/raw/refs/heads/main/java/Reto-Factory-v2.4.zip
-case "Crypto" -> new CryptoProcessor();
+// 2. Nuevo ConcreteCreator en ConcreteCreators.java
+class CryptoFactory extends PaymentFactory {
+    public PaymentProcessor createProcessor() { return new CryptoProcessor(); }
+}
 
-// 3. Agregar al array en https://github.com/Edwinramirezgon/Reto-Factory/raw/refs/heads/main/java/Reto-Factory-v2.4.zip
+// 3. Nuevo case en resolveCreator() y entrada en METHODS[] de Main.java
+case "Crypto" -> new CryptoFactory();
 private static final String[] METHODS = {"Credit Card", "PayPal", "Bank Transfer", "Crypto"};
 ```
 

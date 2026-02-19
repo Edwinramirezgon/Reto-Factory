@@ -54,8 +54,8 @@ public class Main extends JFrame {
         setLocationRelativeTo(null); // centra la ventana en pantalla
     }
 
-    // Patrón Factory Method en acción: delega la creación del procesador a PaymentFactory.
-    // El cliente (Main) no sabe qué clase concreta se instancia.
+    // Resuelve el ConcreteCreator y delega la creación al Factory Method.
+    // Main solo conoce PaymentFactory (Creator abstracto) y nunca usa "new" sobre productos.
     private void processPayment() {
         try {
             double amount = Double.parseDouble(amountField.getText().trim());
