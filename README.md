@@ -50,6 +50,7 @@ private static final String[] METHODS = {"Credit Card", "PayPal", "Bank Transfer
 ## Cómo ejecutar
 
 ```bash
+cd java
 javac *.java
 java Main
 ```
