@@ -5,8 +5,18 @@ import java.io.PrintStream;
 
 public class Main extends JFrame {
 
-    // Métodos de pago disponibles (deben coincidir con los cases de PaymentFactory)
     private static final String[] METHODS = {"Credit Card", "PayPal", "Bank Transfer"};
+
+    // Resuelve el ConcreteCreator según el método seleccionado.
+    // El cliente solo conoce PaymentFactory (Creator abstracto).
+    private static PaymentFactory resolveCreator(String method) {
+        return switch (method) {
+            case "Credit Card"   -> new CreditCardFactory();
+            case "PayPal"        -> new PayPalFactory();
+            case "Bank Transfer" -> new BankTransferFactory();
+            default -> throw new IllegalArgumentException("Unknown method: " + method);
+        };
+    }
 
     // Componentes de la interfaz gráfica
     private final JComboBox<String> methodBox = new JComboBox<>(METHODS);
@@ -56,7 +66,7 @@ public class Main extends JFrame {
             PrintStream old = System.out;
             System.setOut(new PrintStream(buf));
 
-            PaymentFactory.create(method).process(amount); // Factory Method
+            resolveCreator(method).processPayment(amount); // Factory Method
 
             System.setOut(old); // restaura la salida estándar
             logArea.append(buf + "\n");
